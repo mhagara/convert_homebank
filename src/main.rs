@@ -1,10 +1,10 @@
-use clap::{Parser, ValueEnum};
 use crate::homebank::collection::{HomeBankTransactionCollection, WriteHomeBankCsv};
-use crate::source_transactions::MappableToHomeBank;
-use crate::source_transactions::ReadFromPath;
 use crate::source_transactions::revolut::RevolutCollection;
 use crate::source_transactions::unicredit::UniCreditCollection;
+use crate::source_transactions::MappableToHomeBank;
+use crate::source_transactions::ReadFromPath;
 use crate::utils::to_naive_date;
+use clap::{Parser, ValueEnum};
 
 mod homebank;
 mod source_transactions;
@@ -40,23 +40,27 @@ enum ConversionType {
     UniCredit,
 }
 
-
 fn main() {
     let args = Args::parse();
 
     let mut transactions: Vec<Box<dyn MappableToHomeBank>> = Vec::new();
 
     if args.conversion == ConversionType::Revolut {
-        for t in RevolutCollection::read_from_path(args.input.as_str()).expect("Failed to read Revolut CSV") {
+        for t in RevolutCollection::read_from_path(args.input.as_str())
+            .expect("Failed to read Revolut CSV")
+        {
             transactions.push(Box::new(t));
         }
     } else if args.conversion == ConversionType::UniCredit {
-        for t in UniCreditCollection::read_from_path(args.input.as_str()).expect("Failed to read UniCredit CSV") {
+        for t in UniCreditCollection::read_from_path(args.input.as_str())
+            .expect("Failed to read UniCredit CSV")
+        {
             transactions.push(Box::new(t));
         }
     }
 
-    let mut homebank_transactions: HomeBankTransactionCollection = transactions.iter().map(|i| i.map_to_homebank()).collect();
+    let mut homebank_transactions: HomeBankTransactionCollection =
+        transactions.iter().map(|i| i.map_to_homebank()).collect();
 
     if let Some(from_date) = to_naive_date(args.from.as_deref(), "%Y-%m-%d") {
         homebank_transactions.retain(|i| {
@@ -80,5 +84,7 @@ fn main() {
         });
     }
 
-    homebank_transactions.write_csv(args.output.as_str()).expect("Failed to write HomeBank CSV");
+    homebank_transactions
+        .write_csv(args.output.as_str())
+        .expect("Failed to write HomeBank CSV");
 }

@@ -68,7 +68,7 @@ impl ReadFromPath for UniCreditCollection {
         for row in range.rows() {
             column_index = 0;
             if row_index > 3 {
-                let mut item =UniCreditTransaction {
+                let mut item = UniCreditTransaction {
                     amount: None,
                     status: None,
                     date: None,

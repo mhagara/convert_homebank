@@ -35,7 +35,7 @@ impl MappableToHomeBank for RevolutTransaction {
         return HomeBankTransaction {
             date: match self.started_date {
                 Some(d) => Some(d.date()),
-                _ => None
+                _ => None,
             },
             payment: match self.transaction_type {
                 RevolutTransactionType::Cashback => HomeBankPaymentType::BankTransfer,

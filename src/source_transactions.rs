@@ -3,7 +3,7 @@ use crate::homebank::HomeBankTransaction;
 pub mod revolut;
 pub mod unicredit;
 
-pub trait MappableToHomeBank  {
+pub trait MappableToHomeBank {
     fn map_to_homebank(&self) -> HomeBankTransaction;
 }
 
