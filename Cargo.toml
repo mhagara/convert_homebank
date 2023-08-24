@@ -1,0 +1,15 @@
+[package]
+name = "convert_homebank"
+authors = ["Morgan Hagara"]
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+csv = "1.2.2"
+rust_decimal = {version="1.31.0", features = ["std"]}
+chrono = {version = "0.4.26"}
+calamine = "0.21.2"
+clap = { version = "4.3.23", features = ["derive"] }
+
