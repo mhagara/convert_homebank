@@ -1,9 +1,9 @@
 use crate::homebank::collection::{HomeBankTransactionCollection, WriteHomeBankCsv};
-use crate::source_transactions::revolut::RevolutCollection;
-use crate::source_transactions::unicredit::UniCreditCollection;
+use crate::source_transactions::revolut::{RevolutCollection, RevolutTransaction};
+use crate::source_transactions::unicredit::{UniCreditCollection, UniCreditTransaction};
 use crate::source_transactions::MappableToHomeBank;
 use crate::source_transactions::ReadFromPath;
-use crate::utils::to_naive_date;
+use crate::utils::{option_equals_to_str_ignore_case, to_naive_date};
 use clap::{Parser, ValueEnum};
 
 mod homebank;
@@ -29,6 +29,9 @@ struct Args {
     /// Filter transactions to date (inclusive). (yyyy-mm-dd)
     #[arg(long, short)]
     to: Option<String>,
+    /// Include all transactions, not just completed or booked
+    #[arg(short = 'a', long, default_value_t = false)]
+    include_all: bool,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
@@ -46,16 +49,29 @@ fn main() {
     let mut transactions: Vec<Box<dyn MappableToHomeBank>> = Vec::new();
 
     if args.conversion == ConversionType::Revolut {
+        let filters: [Box<fn(&RevolutTransaction, args: &Args) -> bool>; 2] = [
+            Box::new(|i, _| option_equals_to_str_ignore_case(&i.product, "Current")),
+            Box::new(|i, args| { return args.include_all || option_equals_to_str_ignore_case(&i.state, "COMPLETED"); }),
+        ];
+
         for t in RevolutCollection::read_from_path(args.input.as_str())
             .expect("Failed to read Revolut CSV")
         {
-            transactions.push(Box::new(t));
+            if filters.iter().all(|predicate| predicate(&t, &args)) {
+                transactions.push(Box::new(t));
+            }
         }
     } else if args.conversion == ConversionType::UniCredit {
+        let filters: [Box<fn(&UniCreditTransaction, args: &Args) -> bool>; 1] =
+            [Box::new(|i, args| {
+                return args.include_all || option_equals_to_str_ignore_case(&i.status, "Könyvelt");
+            })];
         for t in UniCreditCollection::read_from_path(args.input.as_str())
             .expect("Failed to read UniCredit CSV")
         {
-            transactions.push(Box::new(t));
+            if filters.iter().all(|predicate| predicate(&t, &args)) {
+                transactions.push(Box::new(t));
+            }
         }
     }
 

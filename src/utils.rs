@@ -95,3 +95,10 @@ pub fn decimal_to_string(value: &Option<Decimal>) -> String {
 pub fn payment_to_string(value: &HomeBankPaymentType) -> String {
     return (*value as u8).to_string();
 }
+
+pub fn option_equals_to_str_ignore_case(a: &Option<String>, b: &str) -> bool {
+    if let Some(s) = a {
+        return s.to_lowercase() == b.to_lowercase();
+    }
+    return false;
+}

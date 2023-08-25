@@ -93,7 +93,6 @@ impl ReadFromPath for RevolutCollection {
                     }
                     return None;
                 })
-                .filter(|i| i.product == Some(String::from("Current")))
                 .collect());
         }
         return Err("");
